@@ -26,4 +26,17 @@ class KakaoAddressSearchServiceTest {
                 .requestAddressSearch("강남대로 405");
         System.out.println(dto);
     }
+
+    @Test
+    @DisplayName("Search Category Test")
+    void categoryTest() {
+        KakaoApiResponseDto dto = new KakaoApiResponseDto();
+        double x = 127.0263154489116;
+        double y = 37.49855885145178;
+        double radius = 1000;
+
+        dto = kakaoAddressSearchService
+                .requestAddressSearch("강남대로 405");
+        System.out.println(dto);
+    }
 }
