@@ -57,4 +57,4 @@ jobs:
               docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mypharmacy-backend:latest
               docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mypharmacy-frontend:latest
               cd ~/pharmacy || { mkdir -p ~/pharmacy; cd ~/pharmacy; }
-              docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d
+              docker-compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d
