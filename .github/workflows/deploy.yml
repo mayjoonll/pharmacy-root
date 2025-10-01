@@ -17,10 +17,10 @@ jobs:
         include:
           - name: backend
             context: backend
-            imagename: mypharmacy-backend     # ← 앞의 네임스페이스는 빼고
+            imagename: myapp-backend     # ← 앞의 네임스페이스는 빼고
           - name: frontend
             context: frontend
-            imagename: mypharmacy-frontend
+            imagename: myapp-frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -54,7 +54,7 @@ jobs:
             key: ${{ secrets.EC2_SSH_KEY }}
             script: |
               set -e
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mypharmacy-backend:latest
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mypharmacy-frontend:latest
-              cd ~/pharmacy || { mkdir -p ~/pharmacy; cd ~/pharmacy; }
+              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp-backend:latest
+              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/myapp-frontend:latest
+              cd ~/app || { mkdir -p ~/app; cd ~/app; }
               docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d
