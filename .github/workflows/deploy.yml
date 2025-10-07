@@ -47,21 +47,31 @@ jobs:
       - name: Push Docker image
         run: docker push mayjoonll/pharmacy-app:latest
 
-      # 8. SSH 키 생성 (GitHub 시크릿 사용)
-      - name: Create SSH key
-        run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/aws-mayjoonll-key.pem
-          chmod 600 /tmp/aws-mayjoonll-key.pem
+      # 8. SSH 키 생성 (수동 파일 생성 단계 제거됨)
+      # 키 파일 생성 대신, appleboy/ssh-action의 'key' 파라미터로 직접 전달합니다.
 
-      # 9. EC2 서버에 배포
+      # 9. EC2 서버에 배포 (SSH 인증 개선 및 환경변수 전달)
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ec2-user
-          key_path: /tmp/aws-mayjoonll-key.pem
+          # key_path 대신 'key' 파라미터로 GitHub Secret 값을 직접 전달
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # 최신 이미지 풀
             docker pull mayjoonll/pharmacy-app:latest
+
+            # 기존 컨테이너 중지 (실행 중이 아니어도 오류를 무시)
             docker stop pharmacy-app || true
+
+            # 기존 컨테이너 삭제 (존재하지 않아도 오류를 무시)
             docker rm pharmacy-app || true
-            docker run -d --name pharmacy-app -p 8080:8080 mayjoonll/pharmacy-app:latest
+
+            # 새 컨테이너 실행 및 환경 변수 전달
+            # -e 옵션을 사용하여 KAKAO_REST_API_KEY를 컨테이너 내부로 전달
+            docker run -d \
+              --name pharmacy-app \
+              -p 8080:8080 \
+              -e KAKAO_REST_API_KEY='${{ secrets.KAKAO_REST_API_KEY }}' \
+              mayjoonll/pharmacy-app:latest
