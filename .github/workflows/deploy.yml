@@ -47,11 +47,11 @@ jobs:
       - name: Push Docker image
         run: docker push mayjoonll/pharmacy-app:latest
 
-      # 8. SSH 키 임시 파일로 생성
+      # 8. SSH 키 임시 파일 생성 (절대 경로 /tmp 사용)
       - name: Create SSH key
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/aws-mayjoonll-key.pem
-          chmod 600 ~/aws-mayjoonll-key.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/aws-mayjoonll-key.pem
+          chmod 600 /tmp/aws-mayjoonll-key.pem
 
       # 9. EC2 서버에 배포
       - name: Deploy to EC2
@@ -59,7 +59,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}  # ec2-user
-          key_path: ~/aws-mayjoonll-key.pem
+          key_path: /tmp/aws-mayjoonll-key.pem
           script: |
             docker pull mayjoonll/pharmacy-app:latest
             docker stop pharmacy-app || true
