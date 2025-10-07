@@ -5,6 +5,9 @@ on:
     branches:
       - main  # main 브랜치에 푸시될 때만 실행
 
+env:
+  KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -25,10 +28,8 @@ jobs:
       - name: Set execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 4. Gradle 빌드 (테스트 환경 변수 포함)
+      # 4. Gradle 빌드
       - name: Build with Gradle
-        env:
-          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
         run: ./gradlew clean build
 
       # 5. Docker Hub 로그인
@@ -51,7 +52,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
+          username: ${{ secrets.EC2_USER }}  # ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker pull mayjoonll/pharmacy-app:latest
