@@ -25,8 +25,10 @@ jobs:
       - name: Set execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # 4. Gradle 빌드
+      # 4. Gradle 빌드 (테스트 환경 변수 포함)
       - name: Build with Gradle
+        env:
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
         run: ./gradlew clean build
 
       # 5. Docker Hub 로그인
