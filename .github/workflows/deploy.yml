@@ -47,13 +47,13 @@ jobs:
       - name: Push Docker image
         run: docker push mayjoonll/pharmacy-app:latest
 
-      # 8. SSH key 임시 파일 생성
+      # 8. SSH 키 생성 (GitHub 시크릿 사용)
       - name: Create SSH key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/aws-mayjoonll-key.pem
           chmod 600 /tmp/aws-mayjoonll-key.pem
 
-      # 9. EC2 서버 배포
+      # 9. EC2 서버에 배포
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
