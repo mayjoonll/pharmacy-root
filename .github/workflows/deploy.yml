@@ -21,26 +21,30 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # 3. Gradle 빌드
+      # 3. gradlew 실행 권한 부여
+      - name: Set execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      # 4. Gradle 빌드
       - name: Build with Gradle
         run: ./gradlew clean build
 
-      # 4. Docker Hub 로그인
+      # 5. Docker Hub 로그인
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 5. Docker 이미지 빌드
+      # 6. Docker 이미지 빌드
       - name: Build Docker image
         run: docker build -t mayjoonll/pharmacy-app:latest .
 
-      # 6. Docker 이미지 푸시
+      # 7. Docker 이미지 푸시
       - name: Push Docker image
         run: docker push mayjoonll/pharmacy-app:latest
 
-      # 7. EC2 서버에 배포
+      # 8. EC2 서버에 배포
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
