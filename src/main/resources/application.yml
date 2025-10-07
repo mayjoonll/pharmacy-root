@@ -1,23 +1,78 @@
-#MySQL 세팅
+
+
+server:
+  port: 8081
+  address: 0.0.0.0
+
 spring:
+  profiles:
+    active: local
+    group:
+      local:
+        - common
+      prod:
+        - common
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: common
+  # 공통 설정 필요 시 추가 가능
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/pharmacy
-    username: ${DB_USER}
-    password: ${DB_PW}
-  sql:
-    init:
-      mode: NEVER
+    url: jdbc:mysql://mypharmacy-db-seungjun.cz4qko6qeu3f.ap-northeast-2.rds.amazonaws.com:3306/mypharmacy?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: admin
+    password: ac29858033
   jpa:
-    defer-datasource-initialization: false
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: update   # 개발 단계에서는 update, 운영 단계에서는 validate 권장
     properties:
       hibernate:
         show_sql: true
         format_sql: true
 
+app:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:3000}
+
 kakao:
   rest:
     api:
-      key: ${KAKAO_REST_API_KEY}
+      key: ${KAKAO_REST_API_KEY}  # .env에서 API 키 불러오기
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${RDS_ENDPOINT:my-prod-database}:3306/mypharmacy?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: validate  # 운영에서는 validate
+    properties:
+      hibernate:
+        show_sql: false
+
+app:
+  allowed-origins: ${ALLOWED_ORIGINS:https://YOUR_DOMAIN}
+
+kakao:
+  rest:
+    api:
+      key: ${KAKAO_REST_API_KEY}  # 운영 환경에서도 동일하게 .env 또는 GitHub Secret에서 불러오기

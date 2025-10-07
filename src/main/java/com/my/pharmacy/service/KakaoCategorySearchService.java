@@ -22,32 +22,34 @@ import java.util.List;
 public class KakaoCategorySearchService {
     private final RestTemplate restTemplate;
 
-    // 환경변수에서 ${KAKAO_REST_API_KEY} 값을 가져와서 사용
+    // 환경변수 또는 application.yml에서 주입
     @Value("${KAKAO_REST_API_KEY}")
     private String kakaoRestApiKey;
 
-    // 우리가 만들 주소(url)
-    // https://dapi.kakao.com/v2/local/search/category.json
-    // ?category_group_code=PM9&x=127.026692446306&y=37.4987750083767&radius=1000&sort=distance
+    // 카테고리 검색 엔드포인트
     private static final String KAKAO_CATEGORY_URL =
             "https://dapi.kakao.com/v2/local/search/category.json";
 
+    /**
+     * 약국(PM9) 고정, 1페이지 조회
+     */
     public KakaoApiResponseDto resultCategorySearch(
             double latitude, double longitude, double radius) {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromUriString(KAKAO_CATEGORY_URL);
-        // 파라미터 설정
-        uriBuilder.queryParam("category_group_code", "PM9");
-        uriBuilder.queryParam("x", longitude);
-        uriBuilder.queryParam("y", latitude);
-        uriBuilder.queryParam("radius", radius);
-        uriBuilder.queryParam("sort", "distance");
 
-        URI uri = uriBuilder.build().encode().toUri();
-        // 헤더 만들기
+        URI uri = UriComponentsBuilder
+                .fromUriString(KAKAO_CATEGORY_URL)
+                .queryParam("category_group_code", "PM9") // 약국
+                .queryParam("x", longitude)
+                .queryParam("y", latitude)
+                .queryParam("radius", radius) // m
+                .queryParam("sort", "distance")
+                .queryParam("page", 1)        // 필요시 파라미터화 가능
+                .queryParam("size", 15)       // 기본 15 (1~15)
+                .build(true)
+                .toUri();
+
         HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.AUTHORIZATION,
-                "KakaoAK " + kakaoRestApiKey);
+        headers.set(HttpHeaders.AUTHORIZATION, "KakaoAK " + kakaoRestApiKey);
         HttpEntity<Object> httpEntity = new HttpEntity<>(headers);
 
         return restTemplate.exchange(
@@ -58,33 +60,31 @@ public class KakaoCategorySearchService {
         ).getBody();
     }
 
+    // (선택) 뷰용 가공 (리스트 3개만)
     public List<OutputDto> makeOutputDto(List<DocumentDto> documentList) {
-        // 리스트에 3개만 담기
         return documentList.stream()
-                .map(x -> convertDto(x))
+                .map(this::convertDto)
                 .limit(3)
                 .toList();
     }
 
-    // DocumentDto에서 자료를 뽑아서 길찾기, 로드맵을 추가
     private OutputDto convertDto(DocumentDto documentDto) {
-        // 로드뷰 URL 만들기
-        // https://map.kakao.com/link/roadview/37.49855885145178,127.0263154489116
         String ROAD_VIEW_URL = "https://map.kakao.com/link/roadview/";
-        // 길찾기 URL 만들기
-        // https://map.kakao.com/link/to/강남엘약국,37.49855885145178,127.0263154489116
         String DIRECTION_URL = "https://map.kakao.com/link/to/";
 
-        String params = String.join(",", documentDto.getPlaceName(),
+        String params = String.join(",",
+                documentDto.getPlaceName(),
                 String.valueOf(documentDto.getLatitude()),
-                String.valueOf(documentDto.getLongitude()));
+                String.valueOf(documentDto.getLongitude())
+        );
+
         String mapUrl = UriComponentsBuilder
                 .fromUriString(DIRECTION_URL + params)
                 .toUriString();
 
-        // 로드뷰 URL 생성
-        String roadUrl = ROAD_VIEW_URL + documentDto.getLatitude() + "," +
-                documentDto.getLongitude();
+        String roadUrl = ROAD_VIEW_URL
+                + documentDto.getLatitude() + ","
+                + documentDto.getLongitude();
 
         return OutputDto.builder()
                 .pharmacyName(documentDto.getPlaceName())

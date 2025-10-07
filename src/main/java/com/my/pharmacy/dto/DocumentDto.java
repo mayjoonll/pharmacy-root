@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @ToString
 public class DocumentDto {
-    @JsonProperty
+    @JsonProperty("place_name")
     private String placeName;
     @JsonProperty("address_name")
     private String addressName;
@@ -20,4 +20,6 @@ public class DocumentDto {
     // 거리
     @JsonProperty("distance")
     private double distance;
+
+
 }

@@ -6,6 +6,8 @@ import com.my.pharmacy.dto.KakaoApiResponseDto;
 import com.my.pharmacy.dto.OutputDto;
 import com.my.pharmacy.service.KakaoAddressSearchService;
 import com.my.pharmacy.service.KakaoCategorySearchService;
+import com.my.pharmacy.service.PharmacySaveService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,15 +16,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class FormController {
     private final KakaoAddressSearchService kakaoAddressSearchService;
     private final KakaoCategorySearchService kakaoCategorySearchService;
-
-    public FormController(KakaoAddressSearchService kakaoAddressSearchService,
-                          KakaoCategorySearchService kakaoCategorySearchService) {
-        this.kakaoAddressSearchService = kakaoAddressSearchService;
-        this.kakaoCategorySearchService = kakaoCategorySearchService;
-    }
+    private final PharmacySaveService pharmacySaveService;
 
 
     @GetMapping("/")
@@ -58,6 +56,14 @@ public class FormController {
                         recommendationDto.getDocumentList());
         System.out.println(outputDtoList);
         model.addAttribute("outputList", outputDtoList);
+
+        int savedCount = pharmacySaveService.searchAndSave(
+                documentDto.getLatitude(),
+                documentDto.getLongitude(),
+                radius
+        );
+        model.addAttribute("savedCount", savedCount);
+
         return "output";
     }
 }
